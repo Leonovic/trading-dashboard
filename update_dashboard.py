@@ -63,7 +63,6 @@ def fetch_asset_data(symbol, name, asset_type='index'):
 
 def fetch_macro_data():
     """Fetch macro economic indicators"""
-    # Simulierte aktuelle Makro-Daten (könnten von API kommen)
     return {
         'US_Inflation': {'value': '2.9%', 'change': '+0.1%', 'trend': 'up', 'label': 'US Inflation'},
         'Fed_Rate': {'value': '4.50%', 'change': '0.00%', 'trend': 'neutral', 'label': 'Fed Rate'},
@@ -73,18 +72,80 @@ def fetch_macro_data():
         'VIX': {'value': '14.5', 'change': '-2.1%', 'trend': 'down', 'label': 'VIX Fear Index'}
     }
 
+def get_detailed_analysis(key, data):
+    """Generate detailed German analysis based on technical indicators"""
+
+    rsi = data['rsi']
+    change = data['change_pct']
+    confidence = data['confidence']
+    distance = data['distance']
+
+    # RSI Interpretation
+    if rsi > 70:
+        rsi_text = f"RSI bei {rsi:.1f} zeigt <strong>überkaufte Bedingungen</strong>. Vorsicht bei neuen Positionen, Korrektur möglich."
+    elif rsi < 30:
+        rsi_text = f"RSI bei {rsi:.1f} signalisiert <strong>überverkaufte Bedingungen</strong>. Potenzieller Kaufbereich für Mutige."
+    elif rsi > 50:
+        rsi_text = f"RSI bei {rsi:.1f} im positiven Bereich. Momentum ist intakt, aber nicht extrem."
+    else:
+        rsi_text = f"RSI bei {rsi:.1f} im negativen Bereich. Schwäche vorherrschend, aber keine Panik."
+
+    # Trend Interpretation
+    if change > 2:
+        trend_text = f"<strong>Starker Aufwärtstrend</strong> mit +{change:.2f}%. Positive Marktstimmung und Kaufdruck."
+    elif change > 0.5:
+        trend_text = f"<strong>Leichter Aufwärtstrend</strong> mit +{change:.2f}%. Stabilität vorherrschend, aber keine Euphorie."
+    elif change > -0.5:
+        trend_text = f"<strong>Seitwärtsphase</strong> mit {change:+.2f}%. Markt sammelt Kraft für nächste Bewegung."
+    elif change > -2:
+        trend_text = f"<strong>Leichter Rückgang</strong> mit {change:.2f}%. Normaler Gewinnmitnahmen, kein Trendbruch."
+    else:
+        trend_text = f"<strong>Stärkerer Rückgang</strong> mit {change:.2f}%. Vorsicht geboten, Stop-Loss beachten."
+
+    # 52W Interpretation
+    if distance > -2:
+        week_text = f"Nur {abs(distance):.1f}% vom 52-Wochenhoch entfernt. <strong>Starke Performance</strong>, Gewinnmitnahmen wahrscheinlich."
+    elif distance > -10:
+        week_text = f"{abs(distance):.1f}% unter dem 52-Wochenhoch. <strong>Gesunde Konsolidierung</strong> im Aufwärtstrend."
+    elif distance > -20:
+        week_text = f"{abs(distance):.1f}% unter dem 52-Wochenhoch. <strong>Moderater Abstand</strong>, Aufholpotential vorhanden."
+    else:
+        week_text = f"{abs(distance):.1f}% unter dem 52-Wochenhoch. <strong>Größerer Abstand</strong>, möglicher Wendepunkt."
+
+    # Confidence Interpretation
+    if confidence > 80:
+        conf_text = f"<strong>Hoher Confidence-Score von {confidence:.0f}%</strong> – klare Richtung erkennbar."
+    elif confidence > 65:
+        conf_text = f"<strong>Moderater Confidence-Score von {confidence:.0f}%</strong> – gemischte Signale, abwarten."
+    else:
+        conf_text = f"<strong>Niedriger Confidence-Score von {confidence:.0f}%</strong> – hohe Unsicherheit, keine klare Richtung."
+
+    # Asset-spezifische Makro-Einbindung
+    macro_context = {
+        'US100': "Tech-Sektor profitiert von KI-Entwicklungen und moderaten Fed-Erwartungen. Wachstumswerte im Fokus.",
+        'US30': "Industriewerte zeigen gemischte Signale. Value-Rotation und defensive Positionierung vor Fed-Entscheidung.",
+        'SP500': "Breites Marktmomentum über alle Sektoren. Diversifizierte Stärke signalisiert gesunden Markt.",
+        'GOLD': "Safe-Haven-Nachfrage durch geopolitische Unsicherheiten. Inflationsschutz und Portfolio-Absicherung.",
+        'BTC': "Krypto-Markt unter Druck durch Risk-Off-Stimmung. Institutionelle Anleger reduzieren Risiko-Positionen."
+    }
+
+    analysis = f"""{trend_text}<br><br>
+
+    <strong>📊 Technische Indikatoren:</strong><br>
+    • {rsi_text}<br>
+    • {week_text}<br>
+    • {conf_text}<br><br>
+
+    <strong>🌍 Marktkontext:</strong><br>
+    {macro_context.get(key, 'Markt analysiert aktuelle makroökonomische Bedingungen und Nachrichtenlage.')}"""
+
+    return analysis
+
 def generate_html(assets_data, macro_data):
     """Generate HTML dashboard"""
 
     # Asset cards HTML
     asset_cards = ""
-    analyses = {
-        'US100': "Tech sector resilient with AI momentum. Fed expectations support growth. Watch 52-week highs.",
-        'US30': "Mixed industrials signals. Value rotation support. Defensive Fed positioning.",
-        'SP500': "All-time highs with tech leadership. Earnings driving sentiment. Broad strength.",
-        'GOLD': "Safe-haven surge on geopolitical tensions. Extremely overbought - caution advised.",
-        'BTC': "Risk-off pressure. Oversold conditions present potential opportunity. Watch reversal."
-    }
 
     for key, data in assets_data.items():
         if not data:
@@ -105,6 +166,9 @@ def generate_html(assets_data, macro_data):
 
         high_fmt = f"{data['52w_high']:,.0f}"
 
+        # Get detailed German analysis
+        detailed_analysis = get_detailed_analysis(key, data)
+
         asset_cards += f"""
         <div class="card">
             <div class="card-header">
@@ -113,10 +177,14 @@ def generate_html(assets_data, macro_data):
                     <span>●</span>{data['sentiment']}
                 </div>
             </div>
+
             <div class="price-display">
                 <div class="current-price">{price_fmt}</div>
-                <div class="price-change {change_class}">{change_sign}{data['change_pct']:.2f}%</div>
+                <div class="price-change {change_class}">
+                    {change_sign}{data['change_pct']:.2f}%
+                </div>
             </div>
+
             <div class="confidence-section">
                 <div class="confidence-header">
                     <span>Confidence</span>
@@ -126,18 +194,26 @@ def generate_html(assets_data, macro_data):
                     <div class="confidence-fill" style="width: {data['confidence']}%"></div>
                 </div>
             </div>
+
             <div class="last-update">
                 <span>↻</span>
-                <span>Updated: {data['last_update']}</span>
+                <span>Aktualisiert: {data['last_update']} Uhr</span>
             </div>
+
             <div class="ai-analysis">
-                <div class="ai-header"><span>✨</span><span>AI Analysis</span></div>
-                <div class="ai-text">{analyses.get(key, 'Market analysis pending...')}</div>
+                <div class="ai-header">
+                    <span>🤖</span>
+                    <span>KI-Analyse</span>
+                </div>
+                <div class="ai-text">{detailed_analysis}</div>
             </div>
+
             <div class="action-buttons">
-                <button class="btn btn-secondary" onclick="toggleOverview('{key}')">Quick Overview <span id="{key}-arrow">▼</span></button>
-                <button class="btn btn-primary">Deep Dive ↗</button>
+                <button class="btn btn-secondary" onclick="toggleOverview('{key}')">
+                    Details anzeigen <span id="{key}-arrow">▼</span>
+                </button>
             </div>
+
             <div class="expandable-content" id="{key}-overview">
                 <div class="stats-grid">
                     <div class="stat-item">
@@ -145,11 +221,11 @@ def generate_html(assets_data, macro_data):
                         <div class="stat-value" style="color: {rsi_color}">{data['rsi']:.1f}</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-label">52W High</div>
+                        <div class="stat-label">52W Hoch</div>
                         <div class="stat-value">{high_fmt}</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-label">Distance</div>
+                        <div class="stat-label">Abstand</div>
                         <div class="stat-value">{data['distance']:+.1f}%</div>
                     </div>
                 </div>
@@ -203,41 +279,44 @@ header {{ display: flex; justify-content: space-between; align-items: center; pa
 .macro-label {{ font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }}
 .macro-value {{ font-size: 18px; font-weight: 700; }}
 .macro-change {{ font-size: 11px; font-weight: 600; margin-top: 3px; }}
-.dashboard-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px; }}
-.card {{ background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; transition: all 0.3s; }}
+.dashboard-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; margin-bottom: 30px; }}
+.card {{ background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; transition: all 0.3s; }}
 .card:hover {{ transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0, 212, 170, 0.1); }}
 .card-header {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }}
-.asset-name {{ font-size: 22px; font-weight: 700; }}
-.sentiment-badge {{ padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }}
+.asset-name {{ font-size: 24px; font-weight: 700; }}
+.sentiment-badge {{ padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }}
 .sentiment-bullish {{ background: rgba(0, 208, 132, 0.15); color: var(--accent-bullish); border: 1px solid rgba(0, 208, 132, 0.3); }}
 .sentiment-bearish {{ background: rgba(255, 71, 87, 0.15); color: var(--accent-bearish); border: 1px solid rgba(255, 71, 87, 0.3); }}
 .sentiment-neutral {{ background: rgba(160, 160, 176, 0.15); color: var(--text-secondary); border: 1px solid rgba(160, 160, 176, 0.3); }}
-.price-display {{ display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }}
-.current-price {{ font-size: 26px; font-weight: 700; }}
-.price-change {{ font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }}
+.price-display {{ display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }}
+.current-price {{ font-size: 28px; font-weight: 700; }}
+.price-change {{ font-size: 14px; font-weight: 600; padding: 4px 10px; border-radius: 6px; }}
 .positive {{ color: var(--accent-bullish); background: rgba(0, 208, 132, 0.1); }}
 .negative {{ color: var(--accent-bearish); background: rgba(255, 71, 87, 0.1); }}
-.confidence-section {{ margin: 15px 0; }}
+.confidence-section {{ margin: 18px 0; }}
 .confidence-header {{ display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: var(--text-secondary); }}
 .confidence-bar {{ height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; }}
 .confidence-fill {{ height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent-teal), var(--accent-blue)); }}
-.last-update {{ display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); margin-top: 10px; }}
-.ai-analysis {{ background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin: 15px 0; }}
-.ai-header {{ display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: var(--accent-teal); font-weight: 600; font-size: 12px; }}
-.ai-text {{ font-size: 12px; line-height: 1.5; color: var(--text-secondary); }}
-.action-buttons {{ display: flex; gap: 8px; margin-top: 15px; }}
-.btn {{ flex: 1; padding: 10px 16px; border-radius: 8px; border: none; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }}
-.btn-secondary {{ background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }}
-.btn-primary {{ background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue)); color: white; }}
-.stats-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }}
+.last-update {{ display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); margin-top: 10px; }}
+.ai-analysis {{ background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 18px 0; }}
+.ai-header {{ display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--accent-teal); font-weight: 600; font-size: 14px; }}
+.ai-text {{ font-size: 13px; line-height: 1.7; color: var(--text-secondary); }}
+.ai-text strong {{ color: var(--text-primary); }}
+.action-buttons {{ margin-top: 18px; }}
+.btn {{ width: 100%; padding: 12px 20px; border-radius: 10px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }}
+.btn:hover {{ background: var(--bg-hover); }}
+.stats-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }}
 .stat-item {{ text-align: center; }}
-.stat-label {{ font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 3px; }}
-.stat-value {{ font-size: 14px; font-weight: 600; }}
+.stat-label {{ font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; }}
+.stat-value {{ font-size: 15px; font-weight: 600; }}
 .expandable-content {{ max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }}
-.expandable-content.expanded {{ max-height: 400px; }}
-.auto-refresh-info {{ background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }}
+.expandable-content.expanded {{ max-height: 500px; }}
+.auto-refresh-info {{ background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }}
 .refresh-text {{ font-size: 13px; color: var(--text-secondary); }}
 .refresh-time {{ font-size: 13px; color: var(--accent-teal); font-weight: 600; }}
+.footer-info {{ background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 30px; text-align: center; }}
+.footer-text {{ font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }}
+.footer-sub {{ font-size: 12px; color: #57606a; }}
 @media (max-width: 768px) {{ .dashboard-grid {{ grid-template-columns: 1fr; }} .macro-bar {{ grid-template-columns: repeat(2, 1fr); }} .macro-item {{ border-right: none; border-bottom: 1px solid var(--border); padding: 15px 0; }} .macro-item:last-child {{ border-bottom: none; }} }}
 </style>
 </head>
@@ -246,26 +325,26 @@ header {{ display: flex; justify-content: space-between; align-items: center; pa
 <header>
 <div class="logo"><div class="logo-icon">H</div><div class="logo-text">Hybrid Trader Pro</div></div>
 <div style="display: flex; align-items: center; gap: 15px;">
-<div class="status-badge"><div class="status-dot"></div>LIVE DATA</div>
+<div class="status-badge"><div class="status-dot"></div>LIVE DATEN</div>
 <div class="user-avatar">D</div>
 </div>
 </header>
 <div class="welcome-section">
 <div class="welcome-text">Guten Tag, <strong>Trader</strong>.</div>
-<div class="subtitle">Cloud-Hosted | Auto-Refresh every 5 min | 5 Assets | Real-time Macro Data</div>
+<div class="subtitle">Cloud-Hosted | Auto-Refresh alle 5 Minuten | 5 Assets | KI-Analyse</div>
 </div>
 <div class="auto-refresh-info">
-<div class="refresh-text">📊 Dashboard refreshes automatically every 5 minutes via GitHub Actions</div>
-<div class="refresh-time">Last update: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}</div>
+<div class="refresh-text">🚀 Dashboard aktualisiert sich automatisch alle 5 Minuten via GitHub Actions</div>
+<div class="refresh-time">Letztes Update: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}</div>
 </div>
 <div class="macro-bar">{macro_html}</div>
 <div class="dashboard-grid">{asset_cards}</div>
-<div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 30px; text-align: center;">
-<div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 10px;">🚀 Powered by GitHub Actions | Data: Yahoo Finance | Updates: Every 5 minutes</div>
-<div style="font-size: 12px; color: var(--text-secondary);">Next update in ~{5 - (datetime.now().minute % 5)} minutes</div>
+<div class="footer-info">
+<div class="footer-text">⚡ Powered by GitHub Actions | Daten: Yahoo Finance | Aktualisierung: Alle 5 Minuten</div>
+<div class="footer-sub">Nächstes Update in ~{5 - (datetime.now().minute % 5)} Minuten</div>
 </div>
 </div>
-<script>function toggleOverview(asset){{var c=document.getElementById(asset+'-overview'),a=document.getElementById(asset+'-arrow');c.classList.contains('expanded')?(c.classList.remove('expanded'),a.textContent='▼'):(c.classList.add('expanded'),a.textContent='▲');}}</script>
+<script>function toggleOverview(asset){{var c=document.getElementById(asset+'-overview'),a=document.getElementById(asset+'-arrow');c.classList.contains('expanded')?(c.classList.remove('expanded'),a.textContent='▼',a.parentElement.textContent='Details anzeigen ▼'):(c.classList.add('expanded'),a.textContent='▲',a.parentElement.textContent='Details ausblenden ▲');}}</script>
 </body>
 </html>"""
 
@@ -273,10 +352,9 @@ header {{ display: flex; justify-content: space-between; align-items: center; pa
 
 def main():
     """Main function"""
-    print("🚀 Starting Dashboard Update...")
+    print("🚀 Starte Dashboard Update...")
     print(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-    # Define assets
     assets_config = [
         ('^NDX', 'US100', 'index'),
         ('^DJI', 'US30', 'index'),
@@ -285,33 +363,28 @@ def main():
         ('BTC-USD', 'BTC', 'crypto')
     ]
 
-    # Fetch all assets
     assets_data = {}
     for symbol, key, asset_type in assets_config:
-        print(f"📈 Fetching {key}...")
+        print(f"📈 Lade {key}...")
         data = fetch_asset_data(symbol, key, asset_type)
         if data:
             assets_data[key] = data
             print(f"   ✅ {key}: {data['current']:,.2f} ({data['change_pct']:+.2f}%)")
         else:
-            print(f"   ❌ Failed to fetch {key}")
+            print(f"   ❌ Fehler beim Laden von {key}")
 
-    # Fetch macro data
-    print("🌍 Fetching macro data...")
+    print("🌍 Lade Makro-Daten...")
     macro_data = fetch_macro_data()
 
-    # Generate HTML
-    print("🎨 Generating HTML dashboard...")
+    print("🎨 Generiere HTML Dashboard...")
     html = generate_html(assets_data, macro_data)
 
-    # Save to index.html
     with open('index.html', 'w', encoding='utf-8') as f:
         f.write(html)
 
-    print("✅ Dashboard saved to index.html")
-    print("🎉 Update complete!")
+    print("✅ Dashboard gespeichert als index.html")
+    print("🎉 Update abgeschlossen!")
 
-    # Save data summary for debugging
     summary = {
         'last_update': datetime.now().isoformat(),
         'assets': {k: {**v, 'current': float(v['current']), 'change_pct': float(v['change_pct'])} for k, v in assets_data.items()},
@@ -321,7 +394,7 @@ def main():
     with open('data_summary.json', 'w') as f:
         json.dump(summary, f, indent=2)
 
-    print("📝 Data summary saved to data_summary.json")
+    print("📝 Datenzusammenfassung gespeichert")
 
 if __name__ == "__main__":
     main()
