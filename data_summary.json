@@ -1,113 +1,31 @@
 {
-  "last_update": "2026-02-03T15:55:00.197180",
+  "last_update": "2026-02-03T16:10:00.381394",
+  "type": "fundamental_analysis",
+  "assets_count": 6,
   "assets": {
     "US100": {
-      "symbol": "^NDX",
-      "name": "US100",
-      "type": "index",
-      "current": 25623.42578125,
-      "change_pct": -0.4475128864649472,
-      "rsi": 47.824188211807126,
-      "confidence": 50,
-      "52w_high": 26182.1,
-      "52w_low": 16542.2,
-      "distance": -2.133802173049526,
-      "sentiment": "Bearish",
-      "last_update": "15:54:59"
+      "price": 25447.109375,
+      "change": -1.132539818888331
     },
     "US30": {
-      "symbol": "^DJI",
-      "name": "US30",
-      "type": "index",
-      "current": 49517.28125,
-      "change_pct": 0.2218706439514179,
-      "rsi": 54.00166265419195,
-      "confidence": 63.201330123353564,
-      "52w_high": 49653.13,
-      "52w_low": 36611.78,
-      "distance": -0.27359554171105804,
-      "sentiment": "Bullish",
-      "last_update": "15:54:59"
+      "price": 49456.01953125,
+      "change": 0.09787829427069643
     },
     "SP500": {
-      "symbol": "^GSPC",
-      "name": "SP500",
-      "type": "index",
-      "current": 6972.75,
-      "change_pct": -0.05289146666840242,
-      "rsi": 50.96872690007392,
-      "confidence": 50,
-      "52w_high": 7002.28,
-      "52w_low": 4835.04,
-      "distance": -0.42171978269934796,
-      "sentiment": "Bearish",
-      "last_update": "15:54:59"
+      "price": 6943.5498046875,
+      "change": -0.47144585196730426
     },
     "GOLD": {
-      "symbol": "GC=F",
-      "name": "GOLD",
-      "type": "commodity",
-      "current": 4942.2998046875,
-      "change_pct": 6.918330009464575,
-      "rsi": 59.696813337938934,
-      "confidence": 67.75745067035115,
-      "52w_high": 5586.2,
-      "52w_low": 2816.1,
-      "distance": -11.526622665004826,
-      "sentiment": "Bullish",
-      "last_update": "15:54:59"
+      "price": 4957.7001953125,
+      "change": 7.251491515684154
     },
     "BTC": {
-      "symbol": "BTC-USD",
-      "name": "BTC",
-      "type": "crypto",
-      "current": 77767.3203125,
-      "change_pct": -1.1709998310193976,
-      "rsi": 25.57417685541229,
-      "confidence": 50,
-      "52w_high": 126198.07,
-      "52w_low": 74436.68,
-      "distance": -38.37677524505724,
-      "sentiment": "Bearish",
-      "last_update": "15:55:00"
-    }
-  },
-  "macro": {
-    "US_Inflation": {
-      "value": "2.9%",
-      "change": "+0.1%",
-      "trend": "up",
-      "label": "US Inflation"
+      "price": 77614.03125,
+      "change": -1.3658040845649624
     },
-    "Fed_Rate": {
-      "value": "4.50%",
-      "change": "0.00%",
-      "trend": "neutral",
-      "label": "Fed Rate"
-    },
-    "Unemployment": {
-      "value": "4.1%",
-      "change": "-0.1%",
-      "trend": "down",
-      "label": "Unemployment"
-    },
-    "GDP_Growth": {
-      "value": "2.3%",
-      "change": "+0.2%",
-      "trend": "up",
-      "label": "GDP Growth"
-    },
-    "DXY": {
-      "value": "104.2",
-      "change": "-0.8%",
-      "trend": "down",
-      "label": "Dollar Index"
-    },
-    "VIX": {
-      "value": "14.5",
-      "change": "-2.1%",
-      "trend": "down",
-      "label": "VIX Fear Index"
+    "EURUSD": {
+      "price": 1.1818934679031372,
+      "change": -0.25527638089843724
     }
   }
 }
