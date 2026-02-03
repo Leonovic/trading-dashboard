@@ -2,9 +2,8 @@ name: Update Fundamental Dashboard
 
 on:
   schedule:
-    # Alle 15 Minuten
     - cron: '*/15 * * * *'
-  workflow_dispatch: # Manuelles Triggern möglich
+  workflow_dispatch:
 
 jobs:
   update-data:
@@ -25,7 +24,10 @@ jobs:
         pip install yfinance pandas numpy pytz
     
     - name: Run dashboard updater
-      run: python update_dashboard.py
+      run: |
+        echo "Starte Update..."
+        python update_dashboard.py
+        echo "Exit Code: $?"
     
     - name: Commit and push changes
       run: |
