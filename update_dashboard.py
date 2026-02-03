@@ -11,23 +11,33 @@ import numpy as np
 from datetime import datetime
 import pytz
 import json
+import sys
+import traceback
 
 def fetch_asset_data(symbol, name, asset_type='index'):
     """Fetch price data for a single asset"""
     try:
+        print(f"  Fetching {symbol}...")
         ticker = yf.Ticker(symbol)
         hist = ticker.history(period="5d", interval="1d")
-        info = ticker.info
-
-        if len(hist) < 2:
+        
+        if hist is None or len(hist) < 2:
+            print(f"  ⚠️  Keine Daten für {symbol}")
             return None
 
-        current = hist['Close'].iloc[-1]
-        prev = hist['Close'].iloc[-2]
+        current = float(hist['Close'].iloc[-1])
+        prev = float(hist['Close'].iloc[-2])
         change_pct = ((current - prev) / prev) * 100
 
-        week_52_high = info.get('fiftyTwoWeekHigh', current * 1.2)
-        week_52_low = info.get('fiftyTwoWeekLow', current * 0.8)
+        # 52W Daten versuchen zu holen, Fallback wenn nicht verfügbar
+        try:
+            info = ticker.info
+            week_52_high = float(info.get('fiftyTwoWeekHigh', current * 1.1))
+            week_52_low = float(info.get('fiftyTwoWeekLow', current * 0.9))
+        except:
+            week_52_high = current * 1.1
+            week_52_low = current * 0.9
+            
         distance = ((current / week_52_high - 1) * 100)
 
         return {
@@ -42,7 +52,7 @@ def fetch_asset_data(symbol, name, asset_type='index'):
             'last_update': datetime.now(pytz.timezone('Europe/Berlin')).strftime('%H:%M:%S')
         }
     except Exception as e:
-        print(f"Error fetching {symbol}: {e}")
+        print(f"  ❌ Fehler bei {symbol}: {str(e)}")
         return None
 
 def calculate_fundamental_score(asset_key, macro_data):
@@ -290,11 +300,11 @@ def generate_html(assets_data, macro_data):
         
         # Color based on sentiment (not just price change)
         if sentiment == 'Bullish':
-            confidence_color = "var(--accent-bullish)"
+            confidence_color = "#34c759"
         elif sentiment == 'Bearish':
-            confidence_color = "var(--accent-bearish)"
+            confidence_color = "#ff3b30"
         else:
-            confidence_color = "var(--text-secondary)"
+            confidence_color = "#8e8e93"
 
         # Format price based on asset type
         if data['type'] == 'crypto':
@@ -372,21 +382,8 @@ def generate_html(assets_data, macro_data):
         </div>
         """
 
-    # Macro bar HTML
-    macro_html = ""
-    for key, data in macro_data.items():
-        trend_color = "var(--accent-bullish)" if data['trend'] == 'down' and key in ['US_Inflation', 'Unemployment', 'VIX'] else \
-                      "var(--accent-bearish)" if data['trend'] == 'up' and key in ['US_Inflation', 'Unemployment'] else \
-                      "var(--accent-bullish)" if data['trend'] == 'up' else "var(--accent-bearish)" if data['trend'] == 'down' else "var(--text-secondary)"
-        macro_html += f"""
-        <div class="macro-item">
-            <div class="macro-label">{data['label']}</div>
-            <div class="macro-value">{data['value']}</div>
-            <div class="macro-change" style="color: {trend_color}">{data['change']}</div>
-        </div>
-        """
-
     # Complete HTML - Mobile optimized design
+    now = datetime.now(pytz.timezone('Europe/Berlin'))
     html = f"""<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -459,7 +456,7 @@ header {{ display: flex; justify-content: space-between; align-items: center; pa
 
 <div class="info-banner">
 <div class="info-text">🚀 Dashboard aktualisiert sich automatisch alle 15 Minuten via GitHub Actions</div>
-<div class="info-time">Letztes Update: {datetime.now(pytz.timezone('Europe/Berlin')).strftime('%d.%m.%Y %H:%M:%S')}</div>
+<div class="info-time">Letztes Update: {now.strftime('%d.%m.%Y %H:%M:%S')}</div>
 </div>
 
 <div class="macro-grid">
@@ -513,50 +510,66 @@ function toggleOverview(asset) {{
 
 def main():
     """Main function"""
-    print("🚀 Starte Fundamental Dashboard Update...")
-    print(f"⏰ {datetime.now(pytz.timezone('Europe/Berlin')).strftime('%Y-%m-%d %H:%M:%S')} (MEZ/CET)")
+    try:
+        print("🚀 Starte Fundamental Dashboard Update...")
+        print(f"⏰ {datetime.now(pytz.timezone('Europe/Berlin')).strftime('%Y-%m-%d %H:%M:%S')} (MEZ/CET)")
 
-    assets_config = [
-        ('^NDX', 'US100', 'index'),
-        ('^DJI', 'US30', 'index'),
-        ('^GSPC', 'SP500', 'index'),
-        ('GC=F', 'GOLD', 'commodity'),
-        ('BTC-USD', 'BTC', 'crypto'),
-        ('EURUSD=X', 'EURUSD', 'forex')  # NEW: EUR/USD
-    ]
+        assets_config = [
+            ('^NDX', 'US100', 'index'),
+            ('^DJI', 'US30', 'index'),
+            ('^GSPC', 'SP500', 'index'),
+            ('GC=F', 'GOLD', 'commodity'),
+            ('BTC-USD', 'BTC', 'crypto'),
+            ('EURUSD=X', 'EURUSD', 'forex')
+        ]
 
-    assets_data = {}
-    for symbol, key, asset_type in assets_config:
-        print(f"📈 Lade {key}...")
-        data = fetch_asset_data(symbol, key, asset_type)
-        if data:
-            assets_data[key] = data
-            print(f"   ✅ {key}: {data['current']:,.4f if key == 'EURUSD' else data['current']:,.2f}")
-        else:
-            print(f"   ❌ Fehler beim Laden von {key}")
+        assets_data = {}
+        for symbol, key, asset_type in assets_config:
+            print(f"📈 Lade {key}...")
+            data = fetch_asset_data(symbol, key, asset_type)
+            if data:
+                assets_data[key] = data
+                price_str = f"{data['current']:.4f}" if key == 'EURUSD' else f"{data['current']:,.2f}'
+                print(f"   ✅ {key}: {price_str} ({data['change_pct']:+.2f}%)")
+            else:
+                print(f"   ⚠️  {key}: Keine Daten")
 
-    print("🌍 Lade Makro-Daten...")
-    macro_data = fetch_macro_data()
+        if not assets_data:
+            print("❌ Keine Asset-Daten verfügbar!")
+            sys.exit(1)
 
-    print("🎨 Generiere Fundamental HTML Dashboard...")
-    html = generate_html(assets_data, macro_data)
+        print("🌍 Lade Makro-Daten...")
+        macro_data = fetch_macro_data()
 
-    with open('index.html', 'w', encoding='utf-8') as f:
-        f.write(html)
+        print("🎨 Generiere Fundamental HTML Dashboard...")
+        html = generate_html(assets_data, macro_data)
 
-    print("✅ Dashboard gespeichert als index.html")
-    print("🎉 Fundamental Update abgeschlossen!")
+        with open('index.html', 'w', encoding='utf-8') as f:
+            f.write(html)
 
-    # Save summary
-    summary = {
-        'last_update': datetime.now().isoformat(),
-        'type': 'fundamental_analysis',
-        'assets': {k: {'price': float(v['current']), 'change': float(v['change_pct'])} for k, v in assets_data.items()},
-        'macro': macro_data
-    }
-    
-    with open('data_summary.json', 'w') as f:
-        json.dump(summary, f, indent=2)
+        print("✅ Dashboard gespeichert als index.html")
+
+        # Save summary
+        summary = {
+            'last_update': datetime.now().isoformat(),
+            'type': 'fundamental_analysis',
+            'assets_count': len(assets_data),
+            'assets': {k: {'price': float(v['current']), 'change': float(v['change_pct'])} for k, v in assets_data.items()},
+            'macro': macro_data
+        }
+        
+        with open('data_summary.json', 'w') as f:
+            json.dump(summary, f, indent=2)
+            
+        print("🎉 Fundamental Update erfolgreich abgeschlossen!")
+        return 0
+        
+    except Exception as e:
+        print(f"\n❌ KRITISCHER FEHLER: {str(e)}")
+        print("Traceback:")
+        traceback.print_exc()
+        return 1
 
 if _name_ == "_main_":
-    main()
+    exit_code = main()
+    sys.exit(exit_code)
