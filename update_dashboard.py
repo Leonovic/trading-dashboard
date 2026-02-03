@@ -9,6 +9,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import pytz
 import json
 
 def calculate_rsi(prices, period=14):
@@ -55,7 +56,7 @@ def fetch_asset_data(symbol, name, asset_type='index'):
             '52w_low': week_52_low,
             'distance': distance,
             'sentiment': sentiment,
-            'last_update': datetime.now().strftime('%H:%M:%S')
+            'last_update': datetime.now(pytz.timezone('Europe/Berlin')).strftime('%H:%M:%S')
         }
     except Exception as e:
         print(f"Error fetching {symbol}: {e}")
@@ -335,13 +336,13 @@ header {{ display: flex; justify-content: space-between; align-items: center; pa
 </div>
 <div class="auto-refresh-info">
 <div class="refresh-text">🚀 Dashboard aktualisiert sich automatisch alle 5 Minuten via GitHub Actions</div>
-<div class="refresh-time">Letztes Update: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}</div>
+<div class="refresh-time">Letztes Update: {datetime.now(pytz.timezone('Europe/Berlin')).strftime('%d.%m.%Y %H:%M:%S')}</div>
 </div>
 <div class="macro-bar">{macro_html}</div>
 <div class="dashboard-grid">{asset_cards}</div>
 <div class="footer-info">
 <div class="footer-text">⚡ Powered by GitHub Actions | Daten: Yahoo Finance | Aktualisierung: Alle 5 Minuten</div>
-<div class="footer-sub">Nächstes Update in ~{5 - (datetime.now().minute % 5)} Minuten</div>
+<div class="footer-sub">Nächstes Update in ~{5 - (datetime.now(pytz.timezone('Europe/Berlin')).minute % 15)} Minuten</div>
 </div>
 </div>
 <script>function toggleOverview(asset){{var c=document.getElementById(asset+'-overview'),a=document.getElementById(asset+'-arrow');c.classList.contains('expanded')?(c.classList.remove('expanded'),a.textContent='▼',a.parentElement.textContent='Details anzeigen ▼'):(c.classList.add('expanded'),a.textContent='▲',a.parentElement.textContent='Details ausblenden ▲');}}</script>
@@ -353,7 +354,7 @@ header {{ display: flex; justify-content: space-between; align-items: center; pa
 def main():
     """Main function"""
     print("🚀 Starte Dashboard Update...")
-    print(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"⏰ {datetime.now(pytz.timezone('Europe/Berlin')).strftime('%Y-%m-%d %H:%M:%S')} (MEZ/CET)")
 
     assets_config = [
         ('^NDX', 'US100', 'index'),
