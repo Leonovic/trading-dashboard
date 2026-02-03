@@ -500,6 +500,6 @@ def main():
         traceback.print_exc()
         return 1
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     exit_code = main()
     sys.exit(exit_code)
