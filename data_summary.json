@@ -1,5 +1,5 @@
 {
-  "last_update": "2026-05-02T16:41:23.220368",
+  "last_update": "2026-05-02T17:28:56.216965",
   "type": "fundamental_analysis",
   "assets_count": 6,
   "assets": {
@@ -20,8 +20,8 @@
       "change": 0.3293758291533108
     },
     "BTC": {
-      "price": 78474.6875,
-      "change": 0.3782185753207383
+      "price": 78433.78125,
+      "change": 0.32589474155463743
     },
     "EURUSD": {
       "price": 1.172333002090454,
