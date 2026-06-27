@@ -1,11 +1,11 @@
 {
-  "last_update": "2026-06-27T14:53:29.880624",
+  "last_update": "2026-06-27T15:57:04.005705",
   "type": "fundamental_analysis",
   "assets_count": 6,
   "assets": {
     "US100": {
-      "price": NaN,
-      "change": NaN
+      "price": 29118.240234375,
+      "change": -1.0940101014738237
     },
     "US30": {
       "price": NaN,
@@ -20,8 +20,8 @@
       "change": 1.1958801928265725
     },
     "BTC": {
-      "price": 60502.328125,
-      "change": 0.8096090354425083
+      "price": 60709.44140625,
+      "change": 1.154703340999203
     },
     "EURUSD": {
       "price": 1.1389521360397339,
