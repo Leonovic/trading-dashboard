@@ -1,27 +1,27 @@
 {
-  "last_update": "2026-07-25T22:14:36.585133",
+  "last_update": "2026-07-25T23:12:07.176467",
   "type": "fundamental_analysis",
   "assets_count": 6,
   "assets": {
     "US100": {
-      "price": NaN,
-      "change": NaN
+      "price": 28128.33984375,
+      "change": -1.1473304402683997
     },
     "US30": {
-      "price": NaN,
-      "change": NaN
+      "price": 51947.25,
+      "change": 0.45560636649352604
     },
     "SP500": {
-      "price": NaN,
-      "change": NaN
+      "price": 7411.97998046875,
+      "change": 0.04967638835190524
     },
     "GOLD": {
       "price": 4067.60009765625,
       "change": 0.5189541712353288
     },
     "BTC": {
-      "price": 64311.33984375,
-      "change": 0.3320573226690003
+      "price": 64358.0,
+      "change": 0.40485178602388966
     },
     "EURUSD": {
       "price": 1.1375269889831543,
